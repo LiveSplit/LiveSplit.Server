@@ -19,7 +19,7 @@ namespace LiveSplit.UI.Components
 
         public string Description
         {
-            get { return ""; }
+            get { return "Allows a remote connection and control of LiveSplit by starting a small server within LiveSplit."; }
         }
 
         public ComponentCategory Category
