@@ -79,15 +79,21 @@ namespace LiveSplit.UI.Components
                 connection.Dispose();
             }
             Connections.Clear();
+            if (Server != null)
+                Server.Stop();
         }
 
         public void AcceptClient(IAsyncResult result)
         {
-            var client = Server.EndAcceptTcpClient(result);
+            try
+            {
+                var client = Server.EndAcceptTcpClient(result);
 
-            Connect(client.GetStream());
+                Connect(client.GetStream());
 
-            Server.BeginAcceptTcpClient(AcceptClient, null);
+                Server.BeginAcceptTcpClient(AcceptClient, null);
+            }
+            catch { }
         }
 
         private void Connect(Stream stream)
@@ -103,29 +109,7 @@ namespace LiveSplit.UI.Components
             if (timeString == "-")
                 return null;
 
-            double num = 0.0;
-            var factor = 1;
-            if (timeString.StartsWith("-"))
-            {
-                factor = -1;
-                timeString = timeString.Substring(1);
-            }
-
-            string[] array = timeString.Split(new char[]
-	                                    {
-		                                    ':'
-	                                    });
-            for (int i = 0; i < array.Length; i++)
-            {
-                string s = array[i];
-                double num2;
-                if (double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out num2))
-                {
-                    num = num * 60.0 + num2;
-                }
-            }
-
-            return new TimeSpan((long)(factor * num * 10000000));
+            return TimeSpanParser.Parse(timeString);
         }
 
         void connection_ScriptReceived(object sender, ScriptEventArgs e)
@@ -197,11 +181,11 @@ namespace LiveSplit.UI.Components
                 }
                 else if (message == "pausegametime")
                 {
-                    State.IsLoading = true;
+                    State.IsGameTimePaused = true;
                 }
                 else if (message == "unpausegametime")
                 {
-                    State.IsLoading = false;
+                    State.IsGameTimePaused = false;
                 }
                 else if (message == "getdelta")
                 {
@@ -355,6 +339,11 @@ namespace LiveSplit.UI.Components
                 State = state;
                 Model.CurrentState = State;
             }
+        }
+
+        public void Dispose()
+        {
+            CloseAllConnections();
         }
     }
 }

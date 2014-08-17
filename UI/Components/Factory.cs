@@ -44,7 +44,7 @@ namespace LiveSplit.UI.Components
 
         public Version Version
         {
-            get { return new Version(); }
+            get { return Version.Parse("1.0.0"); }
         }
 
         public string XMLURL

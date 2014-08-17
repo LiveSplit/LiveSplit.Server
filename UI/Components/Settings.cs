@@ -13,7 +13,11 @@ namespace LiveSplit.UI.Components
     {
         public ushort Port { get; set; }
 
-        public String PortString { get { return Port.ToString(); } set { Port = UInt16.Parse(value); } }
+        public String PortString
+        {
+            get { return Port.ToString(); }
+            set { Port = UInt16.Parse(value); }
+        }
 
         public Settings()
         {
