@@ -40,7 +40,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Noesis.Javascript">
-      <HintPath>..\..\Libs\Noesis.Javascript v0.7 - Binaries\.Net4.0\x86\Noesis.Javascript.dll</HintPath>
+      <HintPath>..\..\Libs\Noesis.Javascript v0.7 - Binaries\Noesis.Javascript.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
