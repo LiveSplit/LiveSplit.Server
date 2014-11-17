@@ -328,10 +328,6 @@ namespace LiveSplit.UI.Components
             Settings.SetSettings(settings);
         }
 
-        public void RenameComparison(string oldName, string newName)
-        {
-        }
-
         public void Update(UI.IInvalidator invalidator, LiveSplitState state, float width, float height, UI.LayoutMode mode)
         {
             if (State == null)
