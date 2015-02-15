@@ -191,9 +191,7 @@ namespace LiveSplit.UI.Components
                 {
                     var comparison = State.CurrentComparison;
                     if (message.Contains(" "))
-                    {
                         comparison = message.Split(new char[] { ' ' }, 2)[1];
-                    
                     var delta = LiveSplitStateHelper.GetLastDelta(State, State.CurrentSplitIndex, comparison, State.CurrentTimingMethod);
                     var response = DeltaFormatter.Format(delta);
                     e.Connection.SendMessage(response);
@@ -201,7 +199,7 @@ namespace LiveSplit.UI.Components
                 else if (message == "getsplitindex")
                 {
                     var splitindex = State.CurrentSplitIndex;
-                    var response = splintindex;
+                    var response = splitindex.ToString();
                     e.Connection.SendMessage(response);
                 }
                 else if (message == "getcurrentsplitname")
