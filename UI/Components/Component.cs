@@ -187,12 +187,35 @@ namespace LiveSplit.UI.Components
                 {
                     State.IsGameTimePaused = false;
                 }
-                else if (message == "getdelta")
+                else if (message == "getdelta" || message.StartsWith("getdelta "))
                 {
-                    var delta = LiveSplitStateHelper.GetLastDelta(State, State.CurrentSplitIndex, State.CurrentComparison, State.CurrentTimingMethod);
+                    var comparison = State.CurrentComparison;
+                    if (message.Contains(" "))
+                        comparison = message.Split(new char[] { ' ' }, 2)[1];
+                    var delta = LiveSplitStateHelper.GetLastDelta(State, State.CurrentSplitIndex, comparison, State.CurrentTimingMethod);
                     var response = DeltaFormatter.Format(delta);
                     e.Connection.SendMessage(response);
                 }
+                else if (message == "getsplitindex")
+                {
+                    var splitindex = State.CurrentSplitIndex;
+                    var response = splitindex.ToString();
+                    e.Connection.SendMessage(response);
+                }
+                else if (message == "getcurrentsplitname")
+                {
+                	var splitindex = State.CurrentSplitIndex;
+                    var currentsplitname = State.CurrentSplit.Name;
+                    var response = currentsplitname;
+                    e.Connection.SendMessage(response);
+                }
+                else if (message == "getprevioussplitname")
+                {
+                	var previoussplitindex = State.CurrentSplitIndex-1;
+                	var previoussplitname = State.Run[previoussplitindex].Name;
+                    var response = previoussplitname;
+                    e.Connection.SendMessage(response);
+                }                
                 else if (message == "getlastsplittime" && State.CurrentSplitIndex > 0)
                 {
                     var splittime = State.Run[State.CurrentSplitIndex - 1].SplitTime[State.CurrentTimingMethod];
