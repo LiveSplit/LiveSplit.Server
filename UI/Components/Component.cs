@@ -31,6 +31,8 @@ namespace LiveSplit.UI.Components
         protected ITimeFormatter DeltaFormatter { get; set; }
         protected ITimeFormatter SplitTimeFormatter { get; set; }
 
+        protected bool AlwaysPauseGameTime { get; set; }
+
         public float PaddingTop { get { return 0; } }
         public float PaddingBottom { get { return 0; } }
         public float PaddingLeft { get { return 0; } }
@@ -185,7 +187,13 @@ namespace LiveSplit.UI.Components
                 }
                 else if (message == "unpausegametime")
                 {
+                    AlwaysPauseGameTime = false;
                     State.IsGameTimePaused = false;
+                }
+                else if (message == "alwayspausegametime")
+                {
+                    AlwaysPauseGameTime = true;
+                    State.IsGameTimePaused = true;
                 }
                 else if (message == "getdelta" || message.StartsWith("getdelta "))
                 {
@@ -281,6 +289,12 @@ namespace LiveSplit.UI.Components
             }
         }
 
+        private void State_OnStart(object sender, EventArgs e)
+        {
+            if (AlwaysPauseGameTime)
+                State.IsGameTimePaused = true;
+        }
+
         private TimeSpan? PredictTime(LiveSplitState state, String comparison)
         {
             if (state.CurrentPhase == TimerPhase.Running || state.CurrentPhase == TimerPhase.Paused)
@@ -357,11 +371,14 @@ namespace LiveSplit.UI.Components
             {
                 State = state;
                 Model.CurrentState = State;
+                State.OnStart -= State_OnStart;
+                State.OnStart += State_OnStart;
             }
         }
 
         public void Dispose()
         {
+            State.OnStart -= State_OnStart;
             CloseAllConnections();
         }
     }
