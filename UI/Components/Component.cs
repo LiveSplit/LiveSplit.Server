@@ -45,7 +45,7 @@ namespace LiveSplit.UI.Components
 
         public IDictionary<string, Action> ContextMenuControls { get; protected set; }
 
-        public Component()
+        public Component(LiveSplitState state)
         {
             Settings = new Settings();
             Model = new TimerModel();
@@ -56,6 +56,10 @@ namespace LiveSplit.UI.Components
 
             ContextMenuControls = new Dictionary<String, Action>();
             ContextMenuControls.Add("Start Server", Start);
+
+            State = state;
+            Model.CurrentState = State;
+            State.OnStart += State_OnStart;
         }
 
         public void Start()
@@ -134,9 +138,6 @@ namespace LiveSplit.UI.Components
 
         void connection_MessageReceived(object sender, MessageEventArgs e)
         {
-            if (State == null)
-                return;
-
             try
             {
                 var message = e.Message;
@@ -315,19 +316,12 @@ namespace LiveSplit.UI.Components
             }
         }
 
-        private void PrepareDraw(LiveSplitState state)
-        {
-            State = state;
-        }
-
         public void DrawVertical(Graphics g, LiveSplitState state, float width, Region clipRegion)
         {
-            PrepareDraw(state);
         }
 
         public void DrawHorizontal(Graphics g, LiveSplitState state, float height, Region clipRegion)
         {
-            PrepareDraw(state);
         }
 
         public float VerticalHeight
@@ -367,13 +361,6 @@ namespace LiveSplit.UI.Components
 
         public void Update(UI.IInvalidator invalidator, LiveSplitState state, float width, float height, UI.LayoutMode mode)
         {
-            if (State == null)
-            {
-                State = state;
-                Model.CurrentState = State;
-                State.OnStart -= State_OnStart;
-                State.OnStart += State_OnStart;
-            }
         }
 
         public void Dispose()
