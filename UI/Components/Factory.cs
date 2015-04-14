@@ -29,7 +29,7 @@ namespace LiveSplit.UI.Components
 
         public IComponent Create(LiveSplitState state)
         {
-           return new Component();
+           return new Component(state);
         }
 
         public string UpdateName

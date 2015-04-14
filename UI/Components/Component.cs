@@ -31,6 +31,8 @@ namespace LiveSplit.UI.Components
         protected ITimeFormatter DeltaFormatter { get; set; }
         protected ITimeFormatter SplitTimeFormatter { get; set; }
 
+        protected bool AlwaysPauseGameTime { get; set; }
+
         public float PaddingTop { get { return 0; } }
         public float PaddingBottom { get { return 0; } }
         public float PaddingLeft { get { return 0; } }
@@ -43,7 +45,7 @@ namespace LiveSplit.UI.Components
 
         public IDictionary<string, Action> ContextMenuControls { get; protected set; }
 
-        public Component()
+        public Component(LiveSplitState state)
         {
             Settings = new Settings();
             Model = new TimerModel();
@@ -54,6 +56,10 @@ namespace LiveSplit.UI.Components
 
             ContextMenuControls = new Dictionary<String, Action>();
             ContextMenuControls.Add("Start Server", Start);
+
+            State = state;
+            Model.CurrentState = State;
+            State.OnStart += State_OnStart;
         }
 
         public void Start()
@@ -132,9 +138,6 @@ namespace LiveSplit.UI.Components
 
         void connection_MessageReceived(object sender, MessageEventArgs e)
         {
-            if (State == null)
-                return;
-
             try
             {
                 var message = e.Message;
@@ -185,7 +188,13 @@ namespace LiveSplit.UI.Components
                 }
                 else if (message == "unpausegametime")
                 {
+                    AlwaysPauseGameTime = false;
                     State.IsGameTimePaused = false;
+                }
+                else if (message == "alwayspausegametime")
+                {
+                    AlwaysPauseGameTime = true;
+                    State.IsGameTimePaused = true;
                 }
                 else if (message == "getdelta" || message.StartsWith("getdelta "))
                 {
@@ -281,6 +290,12 @@ namespace LiveSplit.UI.Components
             }
         }
 
+        private void State_OnStart(object sender, EventArgs e)
+        {
+            if (AlwaysPauseGameTime)
+                State.IsGameTimePaused = true;
+        }
+
         private TimeSpan? PredictTime(LiveSplitState state, String comparison)
         {
             if (state.CurrentPhase == TimerPhase.Running || state.CurrentPhase == TimerPhase.Paused)
@@ -301,19 +316,12 @@ namespace LiveSplit.UI.Components
             }
         }
 
-        private void PrepareDraw(LiveSplitState state)
-        {
-            State = state;
-        }
-
         public void DrawVertical(Graphics g, LiveSplitState state, float width, Region clipRegion)
         {
-            PrepareDraw(state);
         }
 
         public void DrawHorizontal(Graphics g, LiveSplitState state, float height, Region clipRegion)
         {
-            PrepareDraw(state);
         }
 
         public float VerticalHeight
@@ -353,15 +361,11 @@ namespace LiveSplit.UI.Components
 
         public void Update(UI.IInvalidator invalidator, LiveSplitState state, float width, float height, UI.LayoutMode mode)
         {
-            if (State == null)
-            {
-                State = state;
-                Model.CurrentState = State;
-            }
         }
 
         public void Dispose()
         {
+            State.OnStart -= State_OnStart;
             CloseAllConnections();
         }
     }
