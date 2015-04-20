@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 
@@ -80,11 +77,10 @@ namespace LiveSplit.UI.Components
 
         private void ReadScript(String language)
         {
-            var line = "";
             var builder = new StringBuilder();
             while (true)
             {
-                line = Reader.ReadLine();
+                var line = Reader.ReadLine();
                 if (line == "endscript")
                     break;
                 builder.AppendLine(line);

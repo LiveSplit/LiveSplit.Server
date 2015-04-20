@@ -1,10 +1,5 @@
 ﻿using LiveSplit.Model;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 [assembly: LiveSplit.UI.Components.ComponentFactory(typeof(LiveSplit.UI.Components.Factory))]
 
@@ -50,6 +45,6 @@ namespace LiveSplit.UI.Components
         public string XMLURL
         {
             get { return "http://livesplit.org/update/Components/LiveSplit.Server.xml"; }
-        }    
+        }
     }
 }
