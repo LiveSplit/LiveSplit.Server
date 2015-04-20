@@ -1,9 +1,7 @@
-﻿using LiveSplit.Model;
-using Noesis.Javascript;
+﻿using Noesis.Javascript;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace LiveSplit
 {
