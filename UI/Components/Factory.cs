@@ -29,7 +29,7 @@ namespace LiveSplit.UI.Components
 
         public string UpdateName
         {
-            get { return ""; }
+            get { return ComponentName; }
         }
 
         public string UpdateURL
