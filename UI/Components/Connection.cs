@@ -54,7 +54,12 @@ namespace LiveSplit.UI.Components
         {
             while (true)
             {
-                var command = Reader.ReadLine();
+                String command = null;
+                try
+                {
+                    command = Reader.ReadLine();
+                }
+                catch { }
                 if (command != null)
                 {
                     if (command.StartsWith("startscript"))
