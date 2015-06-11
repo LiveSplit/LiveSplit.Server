@@ -25,17 +25,13 @@ namespace LiveSplit.UI.Components
         public XmlNode GetSettings(XmlDocument document)
         {
             var settingsNode = document.CreateElement("Settings");
-
-            var portNode = document.CreateElement("Port");
-            portNode.InnerText = PortString;
-            settingsNode.AppendChild(portNode);
-
+            settingsNode.AppendChild(SettingsHelper.ToElement(document, "Port", PortString));
             return settingsNode;
         }
 
         public void SetSettings(XmlNode settings)
         {
-            PortString = settings["Port"].InnerText;
+            PortString = SettingsHelper.ParseString(settings["Port"]);
         }
     }
 }
