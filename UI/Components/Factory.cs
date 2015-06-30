@@ -44,7 +44,7 @@ namespace LiveSplit.UI.Components
 
         public string XMLURL
         {
-            get { return "http://livesplit.org/update/Components/LiveSplit.Server.xml"; }
+            get { return "http://livesplit.org/update/Components/update.LiveSplit.Server.xml"; }
         }
     }
 }
