@@ -362,5 +362,10 @@ namespace LiveSplit.UI.Components
             State.OnStart -= State_OnStart;
             CloseAllConnections();
         }
+
+        public int GetSettingsHashCode()
+        {
+            return Settings.GetSettingsHashCode();
+        }
     }
 }
