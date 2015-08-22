@@ -174,7 +174,7 @@ namespace LiveSplit.UI.Components
                 {
                     var value = message.Split(' ')[1];
                     var time = parseTime(value);
-                    State.LoadingTimes = time;
+                    State.LoadingTimes = time ?? TimeSpan.Zero;
                 }
                 else if (message == "pausegametime")
                 {
