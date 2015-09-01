@@ -79,8 +79,9 @@
             // 
             // label2
             // 
+            this.label2.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 29);
+            this.label2.Location = new System.Drawing.Point(3, 35);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(49, 13);
             this.label2.TabIndex = 2;
@@ -88,17 +89,19 @@
             // 
             // label3
             // 
+            this.label3.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(59, 29);
+            this.label3.Location = new System.Drawing.Point(59, 35);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(35, 13);
+            this.label3.Size = new System.Drawing.Size(58, 13);
             this.label3.TabIndex = 3;
-            this.label3.Text = "label3";
+            this.label3.Text = "IP Address";
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(59, 54);
+            this.label4.Location = new System.Drawing.Point(59, 57);
+            this.label4.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(364, 26);
             this.label4.TabIndex = 4;
