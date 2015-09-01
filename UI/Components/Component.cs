@@ -277,6 +277,19 @@ namespace LiveSplit.UI.Components
                 {
                     State.CurrentTimingMethod = TimingMethod.GameTime;
                 }
+                else if (message.StartsWith("setsplitname "))
+                {
+                    int index = Convert.ToInt32(message.Split(new char[] { ' ' }, 3)[1]);
+                    String title = message.Split(new char[] { ' ' }, 3)[2];
+                    State.Run[index].Name = title;
+                    State.Run.HasChanged = true;
+                }
+                else if (message.StartsWith("setcurrentsplitname "))
+                {
+                    String title = message.Split(new char[] { ' ' }, 2)[1];
+                    State.Run[State.CurrentSplitIndex].Name = title;
+                    State.Run.HasChanged = true;
+                }
             }
             catch (Exception ex)
             {
