@@ -24,6 +24,7 @@ namespace LiveSplit.UI.Components
         protected TimerModel Model { get; set; }
         protected ITimeFormatter DeltaFormatter { get; set; }
         protected ITimeFormatter SplitTimeFormatter { get; set; }
+        protected NamedPipeServerStream WaitingServerPipe { get; set; }
 
         protected bool AlwaysPauseGameTime { get; set; }
 
@@ -61,19 +62,25 @@ namespace LiveSplit.UI.Components
             CloseAllConnections();
             Server = new TcpListener(IPAddress.Any, (int)Settings.Port);
             Server.Start();
-            Server.BeginAcceptTcpClient(AcceptClient, null);
-            Task.Factory.StartNew(PipeTask);
+            Server.BeginAcceptTcpClient(AcceptTcpClient, null);
+            WaitingServerPipe = CreateServerPipe();
+            WaitingServerPipe.BeginWaitForConnection(AcceptPipeClient, null);
+
+            ContextMenuControls.Clear();
+            ContextMenuControls.Add("Stop Server", Stop);
         }
 
-        private void PipeTask()
+        public void Stop()
         {
-            var pipe = new NamedPipeServerStream("LiveSplit");
-            pipe.WaitForConnection();
-            Connect(pipe);
+            CloseAllConnections();
+            ContextMenuControls.Clear();
+            ContextMenuControls.Add("Start Server", Start);
         }
 
         protected void CloseAllConnections()
         {
+            if (WaitingServerPipe != null)
+                WaitingServerPipe.Dispose();
             foreach (var connection in Connections)
             {
                 connection.Dispose();
@@ -83,7 +90,7 @@ namespace LiveSplit.UI.Components
                 Server.Stop();
         }
 
-        public void AcceptClient(IAsyncResult result)
+        public void AcceptTcpClient(IAsyncResult result)
         {
             try
             {
@@ -91,9 +98,28 @@ namespace LiveSplit.UI.Components
 
                 Connect(client.GetStream());
 
-                Server.BeginAcceptTcpClient(AcceptClient, null);
+                Server.BeginAcceptTcpClient(AcceptTcpClient, null);
             }
             catch { }
+        }
+
+        public void AcceptPipeClient(IAsyncResult result)
+        {
+            try
+            {
+                WaitingServerPipe.EndWaitForConnection(result);
+
+                Connect(WaitingServerPipe);
+
+                WaitingServerPipe = CreateServerPipe();
+                WaitingServerPipe.BeginWaitForConnection(AcceptPipeClient, null);
+            } catch { }
+        }
+
+        private NamedPipeServerStream CreateServerPipe()
+        {
+            var pipe = new NamedPipeServerStream("LiveSplit", PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+            return pipe;
         }
 
         private void Connect(Stream stream)
