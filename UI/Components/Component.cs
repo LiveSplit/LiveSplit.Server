@@ -161,8 +161,19 @@ namespace LiveSplit.UI.Components
             try
             {
                 var message = e.Message;
+                if (message == "startorsplit")
+                {
+                    if (State.CurrentPhase == TimerPhase.Running)
+                    {
+                        Model.Split();
+                    }
+                    else
+                    {
+                        Model.Start();
+                    }
 
-                if (message == "split")
+                }
+                else if (message == "split")
                 {
                     Model.Split();
                 }
