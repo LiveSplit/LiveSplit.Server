@@ -63,3 +63,46 @@ Other commands:
 * getprevioussplitname
 
 When using game time it's important that you call "initgametime" once. Once "initgametime" is used, an additional comparison will appear and you can switch to it via the context menu (Compare Against > Game Time). This special comparison will show everything based on the game time (every component now shows game time based information).
+
+## Example Clients ##
+
+**Python 2**
+
+```python
+import socket
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect(("localhost", 16834))
+s.send("starttimer\r\n")
+```
+**Java 7+**
+
+```java
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+
+public class MainTest {
+
+	public static void main(String[]){
+    String hostName = "localhost";
+		int portNumber = 16834;
+
+		String str = "starttimer\r\n";
+
+		try (Socket socket = new Socket(hostName, portNumber);
+				OutputStreamWriter osw = new OutputStreamWriter(socket.getOutputStream(), "UTF-8")) {
+			send(str, osw);			
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			System.err.println(e.getMessage());
+		}
+    }
+	
+    static void send(String str, OutputStreamWriter o) throws IOException {
+		o.write(str, 0, str.length());
+		o.flush();
+	}
+
+}
+```
