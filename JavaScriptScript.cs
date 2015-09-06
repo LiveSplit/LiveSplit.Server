@@ -9,9 +9,9 @@ namespace LiveSplit
     {
         private JavascriptContext context;
 
-        public String Code { get; set; }
+        public string Code { get; set; }
 
-        public dynamic this[String name]
+        public dynamic this[string name]
         {
             get
             {
@@ -23,16 +23,16 @@ namespace LiveSplit
             }
         }
 
-        public JavaScriptScript(String code)
+        public JavaScriptScript(string code)
         {
             context = new JavascriptContext();
-            this["createObject"] = new Func<String, Dictionary<String, Object>, Object>(createObject);
-            this["createArray"] = new Func<String, int, Object>(createArray);
-            this["getStaticProperty"] = new Func<String, String, Object>(getStaticProperty);
+            this["createObject"] = new Func<string, Dictionary<string, Object>, Object>(createObject);
+            this["createArray"] = new Func<string, int, Object>(createArray);
+            this["getStaticProperty"] = new Func<string, string, Object>(getStaticProperty);
             Code = code;
         }
 
-        Object createObject(String name, Dictionary<String, Object> parameters)
+        Object createObject(string name, Dictionary<string, Object> parameters)
         {
             var pars = parameters.Values.ToArray();
             var type = Type.GetType(name, true);
@@ -40,13 +40,13 @@ namespace LiveSplit
             return constructor.Invoke(pars);
         }
 
-        Object createArray(String name, int count)
+        Object createArray(string name, int count)
         {
             var type = Type.GetType(name, true);
             return Array.CreateInstance(type, count);
         }
 
-        Object getStaticProperty(String name, String property)
+        Object getStaticProperty(string name, string property)
         {
             var type = Type.GetType(name, true);
             return type.GetProperty(property).GetValue(null, null);

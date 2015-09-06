@@ -1,10 +1,8 @@
-﻿using System;
-
-namespace LiveSplit
+﻿namespace LiveSplit
 {
     public interface IScript
     {
-        dynamic this[String name] { get; set; }
+        dynamic this[string name] { get; set; }
         dynamic Run();
     }
 }

@@ -10,9 +10,9 @@ namespace LiveSplit.UI.Components
     {
         public ushort Port { get; set; }
 
-        public String LocalIP { get; set; }
+        public string LocalIP { get; set; }
 
-        public String GetIP()
+        public string GetIP()
         {
             IPAddress[] ipv4Addresses = Array.FindAll(
                 Dns.GetHostEntry(string.Empty).AddressList,
@@ -20,10 +20,10 @@ namespace LiveSplit.UI.Components
             return ipv4Addresses[0].ToString();
         }
 
-        public String PortString
+        public string PortString
         {
             get { return Port.ToString(); }
-            set { Port = UInt16.Parse(value); }
+            set { Port = ushort.Parse(value); }
         }
 
         public Settings()

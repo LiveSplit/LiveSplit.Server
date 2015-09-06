@@ -7,10 +7,10 @@ namespace LiveSplit.UI.Components
 {
     public class MessageEventArgs : EventArgs
     {
-        public Connection Connection { get; protected set; }
-        public String Message { get; protected set; }
+        public Connection Connection { get; }
+        public string Message { get; }
 
-        public MessageEventArgs(Connection connection, String message)
+        public MessageEventArgs(Connection connection, string message)
         {
             Connection = connection;
             Message = message;
@@ -19,8 +19,8 @@ namespace LiveSplit.UI.Components
 
     public class ScriptEventArgs : EventArgs
     {
-        public Connection Connection { get; protected set; }
-        public IScript Script { get; protected set; }
+        public Connection Connection { get; }
+        public IScript Script { get; }
 
         public ScriptEventArgs(Connection connection, IScript script)
         {
@@ -54,7 +54,7 @@ namespace LiveSplit.UI.Components
         {
             while (true)
             {
-                String command = null;
+                string command = null;
                 try
                 {
                     command = Reader.ReadLine();
@@ -64,7 +64,7 @@ namespace LiveSplit.UI.Components
                 {
                     if (command.StartsWith("startscript"))
                     {
-                        var splits = command.Split(new char[] { ' ' }, 2);
+                        var splits = command.Split(new[] { ' ' }, 2);
                         var language = "C#";
                         if (splits.Length > 1)
                             language = splits[1];
@@ -72,15 +72,14 @@ namespace LiveSplit.UI.Components
                     }
                     else
                     {
-                        if (MessageReceived != null)
-                            MessageReceived(this, new MessageEventArgs(this, command));
+                        MessageReceived?.Invoke(this, new MessageEventArgs(this, command));
                     }
                 }
                 else break;
             }
         }
 
-        private void ReadScript(String language)
+        private void ReadScript(string language)
         {
             var builder = new StringBuilder();
             while (true)
@@ -90,24 +89,20 @@ namespace LiveSplit.UI.Components
                     break;
                 builder.AppendLine(line);
             }
-
-            if (ScriptReceived != null)
+            try
             {
-                try
-                {
-                    var script = ScriptFactory.Create(language, builder.ToString());
-                    ScriptReceived(this, new ScriptEventArgs(this, script));
-                }
-                catch (Exception ex)
-                {
-                    SendMessage("Compile Error: " + ex.Message);
-                }
+                var script = ScriptFactory.Create(language, builder.ToString());
+                ScriptReceived?.Invoke(this, new ScriptEventArgs(this, script));
+            }
+            catch (Exception ex)
+            {
+                SendMessage("Compile Error: " + ex.Message);
             }
         }
 
-        public void SendMessage(String message)
+        public void SendMessage(string message)
         {
-            var buffer = Encoding.UTF8.GetBytes(message + "\r\n");
+            var buffer = Encoding.UTF8.GetBytes(message + Environment.NewLine);
             Stream.Write(buffer, 0, buffer.Length);
         }
 

@@ -9,11 +9,12 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Xml;
 
 namespace LiveSplit.UI.Components
 {
-    public class Component : IComponent
+    public class ServerComponent : IComponent
     {
         public Settings Settings { get; set; }
         public TcpListener Server { get; set; }
@@ -28,19 +29,16 @@ namespace LiveSplit.UI.Components
 
         protected bool AlwaysPauseGameTime { get; set; }
 
-        public float PaddingTop { get { return 0; } }
-        public float PaddingBottom { get { return 0; } }
-        public float PaddingLeft { get { return 0; } }
-        public float PaddingRight { get { return 0; } }
+        public float PaddingTop => 0;
+        public float PaddingBottom => 0;
+        public float PaddingLeft => 0;
+        public float PaddingRight => 0;
 
-        public string ComponentName
-        {
-            get { return "LiveSplit Server (" + Settings.Port + ")"; }
-        }
+        public string ComponentName => $"LiveSplit Server ({ Settings.Port })";
 
         public IDictionary<string, Action> ContextMenuControls { get; protected set; }
 
-        public Component(LiveSplitState state)
+        public ServerComponent(LiveSplitState state)
         {
             Settings = new Settings();
             Model = new TimerModel();
@@ -49,7 +47,7 @@ namespace LiveSplit.UI.Components
             DeltaFormatter = new PreciseDeltaFormatter(TimeAccuracy.Hundredths);
             SplitTimeFormatter = new RegularTimeFormatter(TimeAccuracy.Hundredths);
 
-            ContextMenuControls = new Dictionary<String, Action>();
+            ContextMenuControls = new Dictionary<string, Action>();
             ContextMenuControls.Add("Start Server", Start);
 
             State = state;
@@ -60,7 +58,7 @@ namespace LiveSplit.UI.Components
         public void Start()
         {
             CloseAllConnections();
-            Server = new TcpListener(IPAddress.Any, (int)Settings.Port);
+            Server = new TcpListener(IPAddress.Any, Settings.Port);
             Server.Start();
             Server.BeginAcceptTcpClient(AcceptTcpClient, null);
             WaitingServerPipe = CreateServerPipe();
@@ -130,7 +128,7 @@ namespace LiveSplit.UI.Components
             Connections.Add(connection);
         }
 
-        TimeSpan? parseTime(String timeString)
+        TimeSpan? parseTime(string timeString)
         {
             if (timeString == "-")
                 return null;
@@ -144,7 +142,7 @@ namespace LiveSplit.UI.Components
             {
                 e.Script["state"] = State;
                 e.Script["model"] = Model;
-                e.Script["sendMessage"] = new Action<String>(x => e.Connection.SendMessage(x));
+                e.Script["sendMessage"] = new Action<string>(x => e.Connection.SendMessage(x));
                 var result = e.Script.Run();
                 if (result != null)
                     e.Connection.SendMessage(result.ToString());
@@ -317,13 +315,13 @@ namespace LiveSplit.UI.Components
                 else if (message.StartsWith("setsplitname "))
                 {
                     int index = Convert.ToInt32(message.Split(new char[] { ' ' }, 3)[1]);
-                    String title = message.Split(new char[] { ' ' }, 3)[2];
+                    string title = message.Split(new char[] { ' ' }, 3)[2];
                     State.Run[index].Name = title;
                     State.Run.HasChanged = true;
                 }
                 else if (message.StartsWith("setcurrentsplitname "))
                 {
-                    String title = message.Split(new char[] { ' ' }, 2)[1];
+                    string title = message.Split(new char[] { ' ' }, 2)[1];
                     State.Run[State.CurrentSplitIndex].Name = title;
                     State.Run.HasChanged = true;
                 }
@@ -340,7 +338,7 @@ namespace LiveSplit.UI.Components
                 State.IsGameTimePaused = true;
         }
 
-        private TimeSpan? PredictTime(LiveSplitState state, String comparison)
+        private TimeSpan? PredictTime(LiveSplitState state, string comparison)
         {
             if (state.CurrentPhase == TimerPhase.Running || state.CurrentPhase == TimerPhase.Paused)
             {
@@ -368,42 +366,30 @@ namespace LiveSplit.UI.Components
         {
         }
 
-        public float VerticalHeight
-        {
-            get { return 0; }
-        }
+        public float VerticalHeight => 0;
 
-        public float MinimumWidth
-        {
-            get { return 0; }
-        }
+        public float MinimumWidth => 0;
 
-        public float HorizontalWidth
-        {
-            get { return 0; }
-        }
+        public float HorizontalWidth => 0;
 
-        public float MinimumHeight
-        {
-            get { return 0; }
-        }
+        public float MinimumHeight => 0;
 
-        public System.Xml.XmlNode GetSettings(System.Xml.XmlDocument document)
+        public XmlNode GetSettings(XmlDocument document)
         {
             return Settings.GetSettings(document);
         }
 
-        public System.Windows.Forms.Control GetSettingsControl(UI.LayoutMode mode)
+        public Control GetSettingsControl(LayoutMode mode)
         {
             return Settings;
         }
 
-        public void SetSettings(System.Xml.XmlNode settings)
+        public void SetSettings(XmlNode settings)
         {
             Settings.SetSettings(settings);
         }
 
-        public void Update(UI.IInvalidator invalidator, LiveSplitState state, float width, float height, UI.LayoutMode mode)
+        public void Update(IInvalidator invalidator, LiveSplitState state, float width, float height, LayoutMode mode)
         {
         }
 

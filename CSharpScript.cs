@@ -19,7 +19,7 @@ namespace LiveSplit
             }
         }
 
-        public CSharpScript(String code)
+        public CSharpScript(string code)
         {
             using (var provider =
                 new Microsoft.CSharp.CSharpCodeProvider())

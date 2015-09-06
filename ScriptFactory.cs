@@ -4,9 +4,9 @@ namespace LiveSplit
 {
     public class ScriptFactory
     {
-        public static readonly String[] AllScripts = { "JavaScript", "C#" };
+        public static readonly string[] AllScripts = { "JavaScript", "C#" };
 
-        public static IScript Create(String language, String code)
+        public static IScript Create(string language, string code)
         {
             var lowerLanguage = language.ToLower();
 
