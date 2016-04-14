@@ -40,6 +40,7 @@ namespace LiveSplit.UI.Components
 
         public event MessageEventHandler MessageReceived;
         public event ScriptEventHandler ScriptReceived;
+        public event EventHandler Disconnected;
 
         public Connection(Stream stream)
         {
@@ -77,6 +78,8 @@ namespace LiveSplit.UI.Components
                 }
                 else break;
             }
+
+            Disconnected?.Invoke(this, EventArgs.Empty);
         }
 
         private void ReadScript(string language)
