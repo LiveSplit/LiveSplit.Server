@@ -23,6 +23,7 @@ namespace LiveSplit.UI.Components
 
         protected LiveSplitState State { get; set; }
         protected TimerModel Model { get; set; }
+        protected Form Form { get; set; }
         protected ITimeFormatter DeltaFormatter { get; set; }
         protected ITimeFormatter SplitTimeFormatter { get; set; }
         protected NamedPipeServerStream WaitingServerPipe { get; set; }
@@ -51,6 +52,8 @@ namespace LiveSplit.UI.Components
             ContextMenuControls.Add("Start Server", Start);
 
             State = state;
+            Form = state.Form;
+
             Model.CurrentState = State;
             State.OnStart += State_OnStart;
         }
@@ -125,6 +128,7 @@ namespace LiveSplit.UI.Components
             var connection = new Connection(stream);
             connection.MessageReceived += connection_MessageReceived;
             connection.ScriptReceived += connection_ScriptReceived;
+            connection.Disconnected += connection_Disconnected;
             Connections.Add(connection);
         }
 
@@ -330,6 +334,16 @@ namespace LiveSplit.UI.Components
             {
                 Log.Error(ex);
             }
+        }
+
+        private void connection_Disconnected(object sender, EventArgs e)
+        {
+            Form.BeginInvoke(new Action(() =>
+            {
+                var connection = (Connection)sender;
+                Connections.Remove(connection);
+                connection.Dispose();
+            }));
         }
 
         private void State_OnStart(object sender, EventArgs e)
