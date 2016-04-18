@@ -22,8 +22,8 @@ namespace LiveSplit.UI.Components
         public List<Connection> Connections { get; set; }
 
         protected LiveSplitState State { get; set; }
-        protected TimerModel Model { get; set; }
         protected Form Form { get; set; }
+        protected TimerModel Model { get; set; }
         protected ITimeFormatter DeltaFormatter { get; set; }
         protected ITimeFormatter SplitTimeFormatter { get; set; }
         protected NamedPipeServerStream WaitingServerPipe { get; set; }
@@ -97,7 +97,7 @@ namespace LiveSplit.UI.Components
             {
                 var client = Server.EndAcceptTcpClient(result);
 
-                Connect(client.GetStream());
+                Form.BeginInvoke(new Action(() => Connect(client.GetStream())));
 
                 Server.BeginAcceptTcpClient(AcceptTcpClient, null);
             }
@@ -110,7 +110,7 @@ namespace LiveSplit.UI.Components
             {
                 WaitingServerPipe.EndWaitForConnection(result);
 
-                Connect(WaitingServerPipe);
+                Form.BeginInvoke(new Action(() => Connect(WaitingServerPipe)));
 
                 WaitingServerPipe = CreateServerPipe();
                 WaitingServerPipe.BeginWaitForConnection(AcceptPipeClient, null);
@@ -142,27 +142,36 @@ namespace LiveSplit.UI.Components
 
         void connection_ScriptReceived(object sender, ScriptEventArgs e)
         {
+            Form.BeginInvoke(new Action(() => ProcessScriptRequest(e.Script, e.Connection)));
+        }
+
+        private void ProcessScriptRequest(IScript script, Connection clientConnection)
+        {
             try
             {
-                e.Script["state"] = State;
-                e.Script["model"] = Model;
-                e.Script["sendMessage"] = new Action<string>(x => e.Connection.SendMessage(x));
-                var result = e.Script.Run();
+                script["state"] = State;
+                script["model"] = Model;
+                script["sendMessage"] = new Action<string>(x => clientConnection.SendMessage(x));
+                var result = script.Run();
                 if (result != null)
-                    e.Connection.SendMessage(result.ToString());
+                    clientConnection.SendMessage(result.ToString());
             }
             catch (Exception ex)
             {
                 Log.Error(ex);
-                e.Connection.SendMessage(ex.Message);
+                clientConnection.SendMessage(ex.Message);
             }
         }
 
         void connection_MessageReceived(object sender, MessageEventArgs e)
         {
+            Form.BeginInvoke(new Action(() => ProcessMessage(e.Message, e.Connection)));
+        }
+
+        private void ProcessMessage(String message, Connection clientConnection)
+        {
             try
             {
-                var message = e.Message;
                 if (message == "startorsplit")
                 {
                     if (State.CurrentPhase == TimerPhase.Running)
@@ -173,7 +182,6 @@ namespace LiveSplit.UI.Components
                     {
                         Model.Start();
                     }
-
                 }
                 else if (message == "split")
                 {
@@ -236,45 +244,45 @@ namespace LiveSplit.UI.Components
                         comparison = message.Split(new char[] { ' ' }, 2)[1];
                     var delta = LiveSplitStateHelper.GetLastDelta(State, State.CurrentSplitIndex, comparison, State.CurrentTimingMethod);
                     var response = DeltaFormatter.Format(delta);
-                    e.Connection.SendMessage(response);
+                    clientConnection.SendMessage(response);
                 }
                 else if (message == "getsplitindex")
                 {
                     var splitindex = State.CurrentSplitIndex;
                     var response = splitindex.ToString();
-                    e.Connection.SendMessage(response);
+                    clientConnection.SendMessage(response);
                 }
                 else if (message == "getcurrentsplitname")
                 {
-                	var splitindex = State.CurrentSplitIndex;
+                    var splitindex = State.CurrentSplitIndex;
                     var currentsplitname = State.CurrentSplit.Name;
                     var response = currentsplitname;
-                    e.Connection.SendMessage(response);
+                    clientConnection.SendMessage(response);
                 }
                 else if (message == "getprevioussplitname")
                 {
-                	var previoussplitindex = State.CurrentSplitIndex-1;
-                	var previoussplitname = State.Run[previoussplitindex].Name;
+                    var previoussplitindex = State.CurrentSplitIndex - 1;
+                    var previoussplitname = State.Run[previoussplitindex].Name;
                     var response = previoussplitname;
-                    e.Connection.SendMessage(response);
-                }                
+                    clientConnection.SendMessage(response);
+                }
                 else if (message == "getlastsplittime" && State.CurrentSplitIndex > 0)
                 {
                     var splittime = State.Run[State.CurrentSplitIndex - 1].SplitTime[State.CurrentTimingMethod];
                     var response = SplitTimeFormatter.Format(splittime);
-                    e.Connection.SendMessage(response);
+                    clientConnection.SendMessage(response);
                 }
                 else if (message == "getcomparisonsplittime")
                 {
                     var splittime = State.CurrentSplit.Comparisons[State.CurrentComparison][State.CurrentTimingMethod];
                     var response = SplitTimeFormatter.Format(splittime);
-                    e.Connection.SendMessage(response);
+                    clientConnection.SendMessage(response);
                 }
                 else if (message == "getcurrenttime")
                 {
                     var time = State.CurrentTime[State.CurrentTimingMethod];
                     var response = SplitTimeFormatter.Format(time);
-                    e.Connection.SendMessage(response);
+                    clientConnection.SendMessage(response);
                 }
                 else if (message == "getfinaltime" || message.StartsWith("getfinaltime "))
                 {
@@ -287,21 +295,21 @@ namespace LiveSplit.UI.Components
                         ? State.CurrentTime[State.CurrentTimingMethod]
                         : State.Run.Last().Comparisons[comparison][State.CurrentTimingMethod];
                     var response = SplitTimeFormatter.Format(time);
-                    e.Connection.SendMessage(response);
+                    clientConnection.SendMessage(response);
                 }
                 else if (message.StartsWith("getpredictedtime "))
                 {
                     var comparison = message.Split(new char[] { ' ' }, 2)[1];
                     var prediction = PredictTime(State, comparison);
                     var response = SplitTimeFormatter.Format(prediction);
-                    e.Connection.SendMessage(response);
+                    clientConnection.SendMessage(response);
                 }
                 else if (message == "getbestpossibletime")
                 {
                     var comparison = LiveSplit.Model.Comparisons.BestSegmentsComparisonGenerator.ComparisonName;
                     var prediction = PredictTime(State, comparison);
                     var response = SplitTimeFormatter.Format(prediction);
-                    e.Connection.SendMessage(response);
+                    clientConnection.SendMessage(response);
                 }
                 else if (message.StartsWith("setcomparison "))
                 {
