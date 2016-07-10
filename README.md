@@ -83,7 +83,7 @@ import java.net.Socket;
 
 public class MainTest {
 
-	public static void main(String[]){
+	public static void main(String[] args){
     String hostName = "localhost";
 		int portNumber = 16834;
 
