@@ -311,6 +311,11 @@ namespace LiveSplit.UI.Components
                     var response = SplitTimeFormatter.Format(prediction);
                     clientConnection.SendMessage(response);
                 }
+                else if (message == "getcurrenttimerphase")
+                {
+                    var response = State.CurrentPhase.ToString();
+                    clientConnection.SendMessage(response);
+                }
                 else if (message.StartsWith("setcomparison "))
                 {
                     var comparison = message.Split(new char[] { ' ' }, 2)[1];
