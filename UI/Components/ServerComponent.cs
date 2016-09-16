@@ -280,7 +280,10 @@ namespace LiveSplit.UI.Components
                 }
                 else if (message == "getcurrenttime")
                 {
-                    var time = State.CurrentTime[State.CurrentTimingMethod];
+                    var timingMethod = State.CurrentTimingMethod;
+                    if (timingMethod == TimingMethod.GameTime && !State.IsGameTimeInitialized)
+                        timingMethod = TimingMethod.RealTime;
+                    var time = State.CurrentTime[timingMethod];
                     var response = SplitTimeFormatter.Format(time);
                     clientConnection.SendMessage(response);
                 }
