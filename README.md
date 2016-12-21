@@ -16,7 +16,7 @@ To make a public server, learn to set up a web server. It is probably wiser and 
 
 ## Known Uses ##
 
-* **Android LiveSplit Remote:** In development.
+* **Android LiveSplit Remote:** https://github.com/Ekelbatzen/LiveSplit.Remote.Android
 * **TODO**
 
 ## Commands ##
