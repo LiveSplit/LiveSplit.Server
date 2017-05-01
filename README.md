@@ -58,13 +58,11 @@ Here's the list of commands:
 * pause
 * resume
 * reset
-
 * initgametime
 * setgametime TIME
 * setloadingtimes TIME
 * pausegametime
 * unpausegametime
-
 * setcomparison COMPARISON
 
 The following commands respond with a time:
