@@ -82,6 +82,7 @@ Other commands:
 * getsplitindex
 * getcurrentsplitname
 * getprevioussplitname
+* getcurrenttimerphase
 
 Commands are defined at `ProcessMessage` in "ServerComponent.cs". 
 
