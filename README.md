@@ -39,6 +39,7 @@ To make a public server, consider learning to set up a web server and use what y
 
 * **Android LiveSplit Remote**: https://github.com/Ekelbatzen/LiveSplit.Remote.Android
 * **SplitNotes**: https://github.com/joelnir/SplitNotes
+* **Autosplitter Remote Client**: https://github.com/RavenX8/LiveSplit.Server.Client
 
 Made something cool? Consider getting it added to this list.
 
