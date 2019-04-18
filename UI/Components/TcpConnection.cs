@@ -7,10 +7,10 @@ namespace LiveSplit.UI.Components
 {
     public class MessageEventArgs : EventArgs
     {
-        public Connection Connection { get; }
+        public TcpConnection Connection { get; }
         public string Message { get; }
 
-        public MessageEventArgs(Connection connection, string message)
+        public MessageEventArgs(TcpConnection connection, string message)
         {
             Connection = connection;
             Message = message;
@@ -19,10 +19,10 @@ namespace LiveSplit.UI.Components
 
     public class ScriptEventArgs : EventArgs
     {
-        public Connection Connection { get; }
+        public TcpConnection Connection { get; }
         public IScript Script { get; }
 
-        public ScriptEventArgs(Connection connection, IScript script)
+        public ScriptEventArgs(TcpConnection connection, IScript script)
         {
             Connection = connection;
             Script = script;
@@ -32,20 +32,26 @@ namespace LiveSplit.UI.Components
     public delegate void MessageEventHandler(object sender, MessageEventArgs e);
     public delegate void ScriptEventHandler(object sender, ScriptEventArgs e);
 
-    public class Connection : IDisposable
+    public class TcpConnection : IConnection
     {
         protected Stream Stream { get; private set; }
         protected StreamReader Reader { get; private set; }
+
+        private bool isWebSocket;
+
+        protected Action<string> wsSend;
         protected Thread ReaderThread { get; private set; }
 
         public event MessageEventHandler MessageReceived;
         public event ScriptEventHandler ScriptReceived;
         public event EventHandler Disconnected;
 
-        public Connection(Stream stream)
+        public TcpConnection(Stream stream)
         {
             Stream = stream;
             Reader = new StreamReader(Stream);
+
+            isWebSocket = false;
 
             ReaderThread = new Thread(new ThreadStart(ReadCommands));
             ReaderThread.Start();
@@ -105,8 +111,15 @@ namespace LiveSplit.UI.Components
 
         public void SendMessage(string message)
         {
-            var buffer = Encoding.UTF8.GetBytes(message + Environment.NewLine);
-            Stream.Write(buffer, 0, buffer.Length);
+            if (isWebSocket)
+            {
+                wsSend(message);
+            }
+            else
+            {
+                var buffer = Encoding.UTF8.GetBytes(message + Environment.NewLine);
+                Stream.Write(buffer, 0, buffer.Length);
+            }
         }
 
         public void Dispose()

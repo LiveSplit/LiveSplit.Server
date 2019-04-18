@@ -11,15 +11,17 @@ using System.Net;
 using System.Net.Sockets;
 using System.Windows.Forms;
 using System.Xml;
+using WebSocketSharp.Server;
 
 namespace LiveSplit.UI.Components
 {
-    public class ServerComponent : IComponent
+    class ServerComponent : IComponent
     {
         public Settings Settings { get; set; }
-        public TcpListener Server { get; set; }
+        public TcpListener ServerTcp { get; set; }
+        public WebSocketServer ServerWebSocket { get; set; }
 
-        public List<Connection> Connections { get; set; }
+        public List<IConnection> Connections { get; set; }
 
         protected LiveSplitState State { get; set; }
         protected Form Form { get; set; }
@@ -43,7 +45,7 @@ namespace LiveSplit.UI.Components
         {
             Settings = new Settings();
             Model = new TimerModel();
-            Connections = new List<Connection>();
+            Connections = new List<IConnection>();
 
             DeltaFormatter = new PreciseDeltaFormatter(TimeAccuracy.Hundredths);
             SplitTimeFormatter = new RegularTimeFormatter(TimeAccuracy.Hundredths);
@@ -61,9 +63,19 @@ namespace LiveSplit.UI.Components
         public void Start()
         {
             CloseAllConnections();
-            Server = new TcpListener(IPAddress.Any, Settings.Port);
-            Server.Start();
-            Server.BeginAcceptTcpClient(AcceptTcpClient, null);
+            if (Settings.UseWebSockets)
+            {
+                ServerWebSocket = new WebSocketServer(IPAddress.Any, Settings.Port);
+                ServerWebSocket.AddWebSocketService<WebSocketHandler>("/", () => new WebSocketHandler(this));
+                ServerWebSocket.Start();
+            }
+            else
+            {
+                ServerTcp = new TcpListener(IPAddress.Any, Settings.Port);
+                ServerTcp.Start();
+                ServerTcp.BeginAcceptTcpClient(AcceptTcpClient, null);
+            }
+
             WaitingServerPipe = CreateServerPipe();
             WaitingServerPipe.BeginWaitForConnection(AcceptPipeClient, null);
 
@@ -87,19 +99,21 @@ namespace LiveSplit.UI.Components
                 connection.Dispose();
             }
             Connections.Clear();
-            if (Server != null)
-                Server.Stop();
+            if (ServerTcp != null)
+                ServerTcp.Stop();
+            if (ServerWebSocket != null)
+                ServerWebSocket.Stop();
         }
 
         public void AcceptTcpClient(IAsyncResult result)
         {
             try
             {
-                var client = Server.EndAcceptTcpClient(result);
+                var client = ServerTcp.EndAcceptTcpClient(result);
 
                 Form.BeginInvoke(new Action(() => Connect(client.GetStream())));
 
-                Server.BeginAcceptTcpClient(AcceptTcpClient, null);
+                ServerTcp.BeginAcceptTcpClient(AcceptTcpClient, null);
             }
             catch { }
         }
@@ -125,7 +139,7 @@ namespace LiveSplit.UI.Components
 
         private void Connect(Stream stream)
         {
-            var connection = new Connection(stream);
+            var connection = new TcpConnection(stream);
             connection.MessageReceived += connection_MessageReceived;
             connection.ScriptReceived += connection_ScriptReceived;
             connection.Disconnected += connection_Disconnected;
@@ -145,7 +159,7 @@ namespace LiveSplit.UI.Components
             Form.BeginInvoke(new Action(() => ProcessScriptRequest(e.Script, e.Connection)));
         }
 
-        private void ProcessScriptRequest(IScript script, Connection clientConnection)
+        private void ProcessScriptRequest(IScript script, IConnection clientConnection)
         {
             try
             {
@@ -168,7 +182,7 @@ namespace LiveSplit.UI.Components
             Form.BeginInvoke(new Action(() => ProcessMessage(e.Message, e.Connection)));
         }
 
-        private void ProcessMessage(String message, Connection clientConnection)
+        public void ProcessMessage(string message, IConnection clientConnection)
         {
             try
             {
@@ -356,7 +370,7 @@ namespace LiveSplit.UI.Components
         {
             Form.BeginInvoke(new Action(() =>
             {
-                var connection = (Connection)sender;
+                var connection = (IConnection)sender;
                 Connections.Remove(connection);
                 connection.Dispose();
             }));

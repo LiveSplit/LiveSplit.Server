@@ -12,6 +12,8 @@ namespace LiveSplit.UI.Components
 
         public string LocalIP { get; set; }
 
+        public bool UseWebSockets { get; set; }
+
         public string GetIP()
         {
             IPAddress[] ipv4Addresses = Array.FindAll(
@@ -32,30 +34,39 @@ namespace LiveSplit.UI.Components
             Port = 16834;
             LocalIP = GetIP();
             label3.Text = LocalIP;
+            UseWebSockets = false;
 
+            cbWebSockets.DataBindings.Add("Checked", this, "UseWebSockets", false, DataSourceUpdateMode.OnPropertyChanged);
             txtPort.DataBindings.Add("Text", this, "PortString", false, DataSourceUpdateMode.OnPropertyChanged);
         }
 
         public XmlNode GetSettings(XmlDocument document)
         {
             var parent = document.CreateElement("Settings");
-            CreateSettingsNode(document, parent);
+            CreateSettingsNodes(document, parent);
             return parent;
         }
 
         public int GetSettingsHashCode()
         {
-            return CreateSettingsNode(null, null);
+            return CreateSettingsNodes(null, null);
         }
 
-        private int CreateSettingsNode(XmlDocument document, XmlElement parent)
+        private int CreateSettingsNodes(XmlDocument document, XmlElement parent)
         {
+            SettingsHelper.CreateSetting(document, parent, "UseWebSockets", UseWebSockets);
             return SettingsHelper.CreateSetting(document, parent, "Port", PortString);
         }
 
         public void SetSettings(XmlNode settings)
         {
+            UseWebSockets = SettingsHelper.ParseBool(settings["UseWebSockets"]);
             PortString = SettingsHelper.ParseString(settings["Port"]);
+        }
+
+        private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }

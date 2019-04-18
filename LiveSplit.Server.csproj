@@ -55,16 +55,20 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="websocket-sharp, Version=1.0.2.59611, Culture=neutral, PublicKeyToken=5660b08a1845a91e, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\WebSocketSharp.1.0.3-rc11\lib\websocket-sharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CSharpScript.cs" />
+    <Compile Include="UI\Components\IConnection.cs" />
     <Compile Include="IScript.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="JavaScriptScript.cs" />
     <Compile Include="ScriptFactory.cs" />
     <Compile Include="TimeFormatters\PreciseDeltaFormatter.cs" />
     <Compile Include="UI\Components\ServerComponent.cs" />
-    <Compile Include="UI\Components\Connection.cs" />
+    <Compile Include="UI\Components\TcpConnection.cs" />
     <Compile Include="UI\Components\ServerFactory.cs" />
     <Compile Include="UI\Components\Settings.cs">
       <SubType>UserControl</SubType>
@@ -72,6 +76,8 @@
     <Compile Include="UI\Components\Settings.Designer.cs">
       <DependentUpon>Settings.cs</DependentUpon>
     </Compile>
+    <Compile Include="UI\Components\WebSocketConnection.cs" />
+    <Compile Include="UI\Components\WebSocketHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="UI\Components\Settings.resx">
@@ -89,6 +95,9 @@
       <Name>UpdateManager</Name>
       <Private>False</Private>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
