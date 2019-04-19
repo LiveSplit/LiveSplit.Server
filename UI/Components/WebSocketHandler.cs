@@ -1,4 +1,5 @@
-﻿using WebSocketSharp;
+﻿using System.Text.RegularExpressions;
+using WebSocketSharp;
 using WebSocketSharp.Server;
 
 namespace LiveSplit.UI.Components
@@ -26,7 +27,8 @@ namespace LiveSplit.UI.Components
             {
                 return;
             }
-            parent.ProcessMessage(e.Data, cxn);
+            string data = Regex.Replace(e.Data, @"(\r\n)$", "");
+            parent.ProcessMessage(data, cxn);
         }
     }
 }
