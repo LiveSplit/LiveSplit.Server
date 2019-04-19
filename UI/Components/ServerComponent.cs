@@ -11,6 +11,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Windows.Forms;
 using System.Xml;
+using WebSocketSharp;
 using WebSocketSharp.Server;
 
 namespace LiveSplit.UI.Components
@@ -37,7 +38,7 @@ namespace LiveSplit.UI.Components
         public float PaddingLeft => 0;
         public float PaddingRight => 0;
 
-        public string ComponentName => $"LiveSplit Server ({ Settings.Port })";
+        public string ComponentName => $"LiveSplit Server ({ Settings.TcpPort })";
 
         public IDictionary<string, Action> ContextMenuControls { get; protected set; }
 
@@ -65,16 +66,21 @@ namespace LiveSplit.UI.Components
             CloseAllConnections();
             if (Settings.UseWebSockets)
             {
-                ServerWebSocket = new WebSocketServer(IPAddress.Any, Settings.Port);
-                ServerWebSocket.AddWebSocketService<WebSocketHandler>("/", () => new WebSocketHandler(this));
+                ServerWebSocket = new WebSocketServer(IPAddress.Any, Settings.WebSocketPort);
+                ServerWebSocket.AddWebSocketService<WebSocketHandler>("/", () => new WebSocketHandler(this)
+                {
+                    OriginValidator = val =>
+                    {
+                        return !val.IsNullOrEmpty()
+                            && Settings.WebSocketOrigins.Split('\n').Contains(val);
+                    }
+                });
                 ServerWebSocket.Start();
             }
-            else
-            {
-                ServerTcp = new TcpListener(IPAddress.Any, Settings.Port);
-                ServerTcp.Start();
-                ServerTcp.BeginAcceptTcpClient(AcceptTcpClient, null);
-            }
+
+            ServerTcp = new TcpListener(IPAddress.Any, Settings.TcpPort);
+            ServerTcp.Start();
+            ServerTcp.BeginAcceptTcpClient(AcceptTcpClient, null);
 
             WaitingServerPipe = CreateServerPipe();
             WaitingServerPipe.BeginWaitForConnection(AcceptPipeClient, null);

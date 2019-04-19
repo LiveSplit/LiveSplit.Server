@@ -8,11 +8,15 @@ namespace LiveSplit.UI.Components
 {
     public partial class Settings : UserControl
     {
-        public ushort Port { get; set; }
+        public ushort TcpPort { get; set; }
+
+        public ushort WebSocketPort { get; set; }
 
         public string LocalIP { get; set; }
 
         public bool UseWebSockets { get; set; }
+
+        public string WebSocketOrigins { get; set; }
 
         public string GetIP()
         {
@@ -22,22 +26,32 @@ namespace LiveSplit.UI.Components
             return ipv4Addresses[0].ToString();
         }
 
-        public string PortString
+        public string TcpPortString
         {
-            get { return Port.ToString(); }
-            set { Port = ushort.Parse(value); }
+            get { return TcpPort.ToString(); }
+            set { TcpPort = ushort.Parse(value); }
+        }
+
+        public string WebsocketPortString
+        {
+            get { return WebSocketPort.ToString(); }
+            set { WebSocketPort = ushort.Parse(value); }
         }
 
         public Settings()
         {
             InitializeComponent();
-            Port = 16834;
+            TcpPort = 16834;
+            WebSocketPort = 16835;
+            WebSocketOrigins = "";
             LocalIP = GetIP();
             label3.Text = LocalIP;
             UseWebSockets = false;
 
             cbWebSockets.DataBindings.Add("Checked", this, "UseWebSockets", false, DataSourceUpdateMode.OnPropertyChanged);
-            txtPort.DataBindings.Add("Text", this, "PortString", false, DataSourceUpdateMode.OnPropertyChanged);
+            txtWebSocketPort.DataBindings.Add("Text", this, "WebSocketPortString", false, DataSourceUpdateMode.OnPropertyChanged);
+            txtWebSocketOrigins.DataBindings.Add("Text", this, "WebSocketOrigins", false, DataSourceUpdateMode.OnPropertyChanged);
+            txtTcpPort.DataBindings.Add("Text", this, "TcpPortString", false, DataSourceUpdateMode.OnPropertyChanged);
         }
 
         public XmlNode GetSettings(XmlDocument document)
@@ -55,16 +69,20 @@ namespace LiveSplit.UI.Components
         private int CreateSettingsNodes(XmlDocument document, XmlElement parent)
         {
             SettingsHelper.CreateSetting(document, parent, "UseWebSockets", UseWebSockets);
-            return SettingsHelper.CreateSetting(document, parent, "Port", PortString);
+            SettingsHelper.CreateSetting(document, parent, "WebSocketPort", TcpPortString);
+            SettingsHelper.CreateSetting(document, parent, "WebSocketOrigins", WebSocketOrigins);
+            return SettingsHelper.CreateSetting(document, parent, "TcpPort", TcpPortString);
         }
 
         public void SetSettings(XmlNode settings)
         {
             UseWebSockets = SettingsHelper.ParseBool(settings["UseWebSockets"]);
-            PortString = SettingsHelper.ParseString(settings["Port"]);
+            WebsocketPortString = SettingsHelper.ParseString(settings["WebSocketPort"]);
+            WebSocketOrigins = SettingsHelper.ParseString(settings["WebSocketOrigins"]);
+            TcpPortString = SettingsHelper.ParseString(settings["TcpPort"]);
         }
 
-        private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
+        private void TableLayoutPanel1_Paint(object sender, PaintEventArgs e)
         {
 
         }

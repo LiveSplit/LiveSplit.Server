@@ -20,9 +20,9 @@ You **MUST** start the Server before programs can talk to it (Right click on Liv
 
 ### Layout Settings
 
-#### Port 
+#### TCP Port 
 
-**Port** is the door (1 of thousands) on your computer that this program sends data through. Default is **16834**. This should be fine for most people, but depending on network configurations, some ports may be blocked. See also https://en.wikipedia.org/wiki/Port_%28computer_networking%29
+**TCP Port** is the door (1 of thousands) on your computer that this program sends data through. Default is **16834**. This should be fine for most people, but depending on network configurations, some ports may be blocked. See also https://en.wikipedia.org/wiki/Port_%28computer_networking%29
 
 #### Local IP 
 
@@ -32,8 +32,23 @@ Note that this is **NOT** your public IP with most network configurations. In mo
 
 The local IP is the "IPv4 Address" of the first connected network adapter. This is normally what clients need, but software (such as virtual machines or VPNs) may add network adapters which can appear first. If in doubt, open Command Prompt and run `ipconfig`. The device you are looking for is probably either "Ethernet adapter Ethernet" or "Wireless LAN adapter Wi-Fi".
 
+#### WebSockets
+
+**WebSocket** is a communication protocol used by applications in web browsers. You can enable this to allow specific web pages to talk to LiveSplit.
+
+#### WebSockets Port
+
+**WebSockets Port** is just like **TCP Port** except specifically for WebSockets. The default is **16835**.
+
+#### WebSockets Allowed Origins
+
+Hosts must be added to this list in order to ensure not just any web site can talk to LiveSplit. For example, if you wanted to allow livesplit.org:
+```
+http://livesplit.org
+```
+
 ### Using Across the Internet
-To make a public server, consider learning to set up a web server and use what you learn. It is probably wiser, safer, and easier to use an IRC bot or something else though. Look at "Known Uses" or ask around. 
+To make a public server, consider learning to set up a web server and use what you learn. It is probably wiser, safer, and easier to use an IRC bot or something else though. Look at "Known Uses" or ask around.
 
 ## Known Uses 
 
@@ -131,4 +146,14 @@ public class MainTest {
 	}
 
 }
+```
+
+### JavaScript (via WebSockets)
+
+```javascript
+var connection = new WebSocket('ws://localhost:16835');
+connection.onopen = function() {
+	console.log('open');
+	connection.send('startorsplit');
+};
 ```
