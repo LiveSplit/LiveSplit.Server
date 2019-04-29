@@ -69,7 +69,7 @@ namespace LiveSplit.UI.Components
         private int CreateSettingsNodes(XmlDocument document, XmlElement parent)
         {
             SettingsHelper.CreateSetting(document, parent, "UseWebSockets", UseWebSockets);
-            SettingsHelper.CreateSetting(document, parent, "WebSocketPort", TcpPortString);
+            SettingsHelper.CreateSetting(document, parent, "WebSocketPort", WebsocketPortString);
             SettingsHelper.CreateSetting(document, parent, "WebSocketOrigins", WebSocketOrigins);
             return SettingsHelper.CreateSetting(document, parent, "TcpPort", TcpPortString);
         }
