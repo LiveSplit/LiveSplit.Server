@@ -2,7 +2,7 @@
 
 namespace LiveSplit.TimeFormatters
 {
-    class PreciseDeltaFormatter : ITimeFormatter
+    public class PreciseDeltaFormatter : ITimeFormatter
     {
         public TimeAccuracy Accuracy { get; set; }
 
