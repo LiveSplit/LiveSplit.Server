@@ -108,28 +108,16 @@ s.send(b"starttimer\r\n")
 
 ```java
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 public class MainTest {
-    public static void main(String[] args){
-        String hostName = "localhost";
-        int portNumber = 16834;
-
-        String str = "starttimer\r\n";
-
-        try {
-            Socket socket = new Socket(hostName, portNumber);
-            OutputStreamWriter osw = new OutputStreamWriter(socket.getOutputStream(), "UTF-8");
-            send(str, osw);
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-        }
-    }
-
-    static void send(String str, OutputStreamWriter o) throws IOException {
-        o.write(str, 0, str.length());
-        o.flush();
+    public static void main(String[] args) throws IOException {
+        Socket socket = new Socket("localhost", 16834);
+        PrintWriter writer = new PrintWriter(socket.getOutputStream());
+        writer.write("starttimer\r\n");
+        writer.flush();
+        socket.close();
     }
 }
 ```
