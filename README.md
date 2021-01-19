@@ -43,7 +43,6 @@ To make a public server, consider learning to set up a web server and use what y
 - **Android LiveSplit Remote**: https://github.com/Ekelbatzen/LiveSplit.Remote.Android
 - **SplitNotes**: https://github.com/joelnir/SplitNotes
 - **Autosplitter Remote Client**: https://github.com/RavenX8/LiveSplit.Server.Client
-- **Node.js Client Implementation**: https://github.com/satanch/node-livesplit-client
 
 Made something cool? Consider getting it added to this list.
 
@@ -122,3 +121,6 @@ public class MainTest {
     }
 }
 ```
+### Node.js
+
+Node.js client implementation available here: https://github.com/satanch/node-livesplit-client
