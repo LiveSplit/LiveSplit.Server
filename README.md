@@ -121,3 +121,6 @@ public class MainTest {
     }
 }
 ```
+### Node.js
+
+Node.js client implementation available here: https://github.com/satanch/node-livesplit-client
