@@ -17,7 +17,8 @@ namespace LiveSplit.UI.Components
             IPAddress[] ipv4Addresses = Array.FindAll(
                 Dns.GetHostEntry(string.Empty).AddressList,
                 a => a.AddressFamily == AddressFamily.InterNetwork);
-            return ipv4Addresses[0].ToString();
+            
+            return String.Join(",", Array.ConvertAll(ipv4Addresses, x => x.ToString()));
         }
 
         public string PortString
