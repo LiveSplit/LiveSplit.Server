@@ -278,6 +278,21 @@ namespace LiveSplit.UI.Components
                     var response = SplitTimeFormatter.Format(splittime);
                     clientConnection.SendMessage(response);
                 }
+                else if (message == "getcurrentrealtime")
+                {
+                    var time = State.CurrentTime.RealTime;
+                    var response = SplitTimeFormatter.Format(time);
+                    clientConnection.SendMessage(response);
+                }
+                else if (message == "getcurrentgametime")
+                {
+                    var timingMethod = TimingMethod.GameTime;
+                    if (!State.IsGameTimeInitialized)
+                        timingMethod = TimingMethod.RealTime;
+                    var time = State.CurrentTime[timingMethod];
+                    var response = SplitTimeFormatter.Format(time);
+                    clientConnection.SendMessage(response);
+                }
                 else if (message == "getcurrenttime")
                 {
                     var timingMethod = State.CurrentTimingMethod;
