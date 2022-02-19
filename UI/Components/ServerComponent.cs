@@ -242,7 +242,13 @@ namespace LiveSplit.UI.Components
                     var comparison = State.CurrentComparison;
                     if (message.Contains(" "))
                         comparison = message.Split(new char[] { ' ' }, 2)[1];
-                    var delta = LiveSplitStateHelper.GetLastDelta(State, State.CurrentSplitIndex, comparison, State.CurrentTimingMethod);
+
+                    TimeSpan? delta = null;
+                    if (State.CurrentPhase == TimerPhase.Running || State.CurrentPhase == TimerPhase.Paused)
+                        delta = LiveSplitStateHelper.GetLastDelta(State, State.CurrentSplitIndex, comparison, State.CurrentTimingMethod);
+                    else if (State.CurrentPhase == TimerPhase.Ended)
+                        delta = State.Run.Last().SplitTime[State.CurrentTimingMethod] - State.Run.Last().Comparisons[comparison][State.CurrentTimingMethod];
+
                     var response = DeltaFormatter.Format(delta);
                     clientConnection.SendMessage(response);
                 }
