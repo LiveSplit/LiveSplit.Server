@@ -295,7 +295,7 @@ namespace LiveSplit.UI.Components
                     {
                         if (State.CurrentSplitIndex > 0)
                         {
-                            response = State.Run[State.CurrentSplitIndex].Name;
+                            response = State.Run[State.CurrentSplitIndex - 1].Name;
                         }
                         else
                         {
