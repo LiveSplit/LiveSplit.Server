@@ -172,11 +172,7 @@ namespace LiveSplit.UI.Components
         {
             try
             {
-<<<<<<< HEAD
                 var args = message.Split(new [] { ' ' }, 2);
-=======
-                var args = message.Split(new char[] {' '}, 2);
->>>>>>> e03c160a82d0919efc8a260ce8a48f39763f35b4
                 var command = args[0];
                 switch (command)
                 {
@@ -386,11 +382,7 @@ namespace LiveSplit.UI.Components
 
                         if (command == "setsplitname")
                         {
-<<<<<<< HEAD
                             var options = args[1].Split(new [] { ' ' }, 2);
-=======
-                            var options = args[1].Split(new char[] {' '}, 2);
->>>>>>> e03c160a82d0919efc8a260ce8a48f39763f35b4
                             index = Convert.ToInt32(options[0]);
                             title = options[1];
                         }
