@@ -322,7 +322,8 @@ namespace LiveSplit.UI.Components
                     {
                         if (State.CurrentSplit != null)
                         {
-                            var time = State.CurrentSplit.Comparisons[State.CurrentComparison][State.CurrentTimingMethod];
+                            var comparison = args.Length > 1 ? args[1] : State.CurrentComparison;
+                            var time = State.CurrentSplit.Comparisons[comparison][State.CurrentTimingMethod];
                             response = SplitTimeFormatter.Format(time);
                         }
                         else
