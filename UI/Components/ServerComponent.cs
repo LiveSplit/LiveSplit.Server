@@ -317,6 +317,7 @@ namespace LiveSplit.UI.Components
                         }
                         break;
                     }
+                    case "getcurrentsplittime":
                     case "getcomparisonsplittime":
                     {
                         if (State.CurrentSplit != null)
