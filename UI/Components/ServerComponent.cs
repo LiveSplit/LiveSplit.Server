@@ -268,6 +268,7 @@ namespace LiveSplit.UI.Components
                         else if (State.CurrentPhase == TimerPhase.Ended)
                             delta = State.Run.Last().SplitTime[State.CurrentTimingMethod] - State.Run.Last().Comparisons[comparison][State.CurrentTimingMethod];
 
+                        // Defaults to "-" when delta is null, such as when State.CurrentPhase == TimerPhase.NotRunning
                         response = DeltaFormatter.Format(delta);
                         break;
                     }
@@ -279,13 +280,27 @@ namespace LiveSplit.UI.Components
                     }
                     case "getcurrentsplitname":
                     {
-                        response = State.CurrentSplit.Name;
+                        if (State.CurrentSplit != null)
+                        {
+                            response = State.CurrentSplit.Name;
+                        }
+                        else
+                        {
+                            response = "-";
+                        }
                         break;
                     }
                     case "getlastsplitname":
                     case "getprevioussplitname":
                     {
-                        response = State.Run[State.CurrentSplitIndex].Name;
+                        if (State.CurrentSplitIndex > 0)
+                        {
+                            response = State.Run[State.CurrentSplitIndex].Name;
+                        }
+                        else
+                        {
+                            response = "-";
+                        }
                         break;
                     }
                     case "getlastsplittime":
@@ -296,12 +311,23 @@ namespace LiveSplit.UI.Components
                             var time = State.Run[State.CurrentSplitIndex - 1].SplitTime[State.CurrentTimingMethod];
                             response = SplitTimeFormatter.Format(time);
                         }
+                        else
+                        {
+                            response = "-";
+                        }
                         break;
                     }
                     case "getcomparisonsplittime":
                     {
-                        var time = State.CurrentSplit.Comparisons[State.CurrentComparison][State.CurrentTimingMethod];
-                        response = SplitTimeFormatter.Format(time);
+                        if (State.CurrentSplit != null)
+                        {
+                            var time = State.CurrentSplit.Comparisons[State.CurrentComparison][State.CurrentTimingMethod];
+                            response = SplitTimeFormatter.Format(time);
+                        }
+                        else
+                        {
+                            response = "-";
+                        }
                         break;
                     }
                     case "getcurrentrealtime":
@@ -376,8 +402,12 @@ namespace LiveSplit.UI.Components
                             title = options[1];
                         }
 
-                        State.Run[index].Name = title;
-                        State.Run.HasChanged = true;
+                        if (index >= 0)
+                        {
+                            State.Run[index].Name = title;
+                            State.Run.HasChanged = true;
+                        }
+
                         break;
                     }
                     default:
