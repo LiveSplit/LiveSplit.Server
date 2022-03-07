@@ -382,13 +382,13 @@ namespace LiveSplit.UI.Components
                     }
                     default:
                     {
-                        // perhaps an error should be returned for an unrecognized message?
-                        break;
+                        throw new Exception("Unrecognized message");
                     }
                 }
             }
             catch (Exception ex)
             {
+                response = "[Error]: " + ex.GetType() + ": " + ex.Message;
                 Log.Error(ex);
             }
 
