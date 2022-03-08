@@ -170,7 +170,7 @@ namespace LiveSplit.UI.Components
 
         private void ProcessMessage(String message, Connection clientConnection)
         {
-            var response = "";
+            string response = null;
             try
             {
                 var args = message.Split(new [] { ' ' }, 2);
@@ -414,7 +414,7 @@ namespace LiveSplit.UI.Components
                     }
                     default:
                     {
-                        throw new Exception("Unrecognized message");
+                        throw new Exception($"Unrecognized command: \"{command}\"");
                     }
                 }
             }
