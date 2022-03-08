@@ -404,7 +404,7 @@ namespace LiveSplit.UI.Components
                             title = options[1];
                         }
 
-                        if (index >= 0)
+                        if (index >= 0 && index < State.Run.Count)
                         {
                             State.Run[index].Name = title;
                             State.Run.HasChanged = true;
