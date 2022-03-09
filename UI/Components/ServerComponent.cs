@@ -1,6 +1,7 @@
 ﻿using LiveSplit.Model;
 using LiveSplit.Options;
 using LiveSplit.TimeFormatters;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -38,6 +39,15 @@ namespace LiveSplit.UI.Components
         public string ComponentName => $"LiveSplit Server ({ Settings.Port })";
 
         public IDictionary<string, Action> ContextMenuControls { get; protected set; }
+
+        private class Message
+        {
+            public string Command { get; set; }
+
+            public Dictionary<string, object> Data { get; set; }
+
+            public string Nonce { get; set; }
+        }
 
         public ServerComponent(LiveSplitState state)
         {
@@ -173,9 +183,8 @@ namespace LiveSplit.UI.Components
             string response = null;
             try
             {
-                var args = message.Split(new [] { ' ' }, 2);
-                var command = args[0];
-                switch (command)
+                Message request = JsonConvert.DeserializeObject<Message>(message);
+                switch (request.Command)
                 {
                     case "startorsplit":
                     {
@@ -232,13 +241,13 @@ namespace LiveSplit.UI.Components
                     }
                     case "setgametime":
                     {
-                        var time = parseTime(args[1]);
+                        var time = parseTime((string)request.Data["time"]);
                         State.SetGameTime(time);
                         break;
                     }
                     case "setloadingtimes":
                     {
-                        var time = parseTime(args[1]);
+                        var time = parseTime((string)request.Data["time"]);
                         State.LoadingTimes = time ?? TimeSpan.Zero;
                         break;
                     }
@@ -261,7 +270,8 @@ namespace LiveSplit.UI.Components
                     }
                     case "getdelta":
                     {
-                        var comparison = args.Length > 1 ? args[1] : State.CurrentComparison;
+                        var data = (string)request.Data?["comparison"];
+                        var comparison = !string.IsNullOrEmpty(data) ? data : State.CurrentComparison;
                         TimeSpan? delta = null;
                         if (State.CurrentPhase == TimerPhase.Running || State.CurrentPhase == TimerPhase.Paused)
                             delta = LiveSplitStateHelper.GetLastDelta(State, State.CurrentSplitIndex, comparison, State.CurrentTimingMethod);
@@ -322,7 +332,8 @@ namespace LiveSplit.UI.Components
                     {
                         if (State.CurrentSplit != null)
                         {
-                            var comparison = args.Length > 1 ? args[1] : State.CurrentComparison;
+                            var data = (string)request.Data?["comparison"];
+                            var comparison = !string.IsNullOrEmpty(data) ? data : State.CurrentComparison;
                             var time = State.CurrentSplit.Comparisons[comparison][State.CurrentTimingMethod];
                             response = SplitTimeFormatter.Format(time);
                         }
@@ -356,7 +367,8 @@ namespace LiveSplit.UI.Components
                     case "getfinaltime":
                     case "getfinalsplittime":
                     {
-                        var comparison = args.Length > 1 ? args[1] : State.CurrentComparison;
+                        var data = (string)request.Data?["comparison"];
+                        var comparison = !string.IsNullOrEmpty(data) ? data : State.CurrentComparison;
                         var time = (State.CurrentPhase == TimerPhase.Ended)
                             ? State.CurrentTime[State.CurrentTimingMethod]
                             : State.Run.Last().Comparisons[comparison][State.CurrentTimingMethod];
@@ -367,10 +379,12 @@ namespace LiveSplit.UI.Components
                     case "getpredictedtime":
                     {
                         string comparison;
-                        if (command == "getbestpossibletime")
+                        if (request.Command == "getbestpossibletime")
                             comparison = LiveSplit.Model.Comparisons.BestSegmentsComparisonGenerator.ComparisonName;
-                        else
-                            comparison = args.Length > 1 ? args[1] : State.CurrentComparison;
+                        else {
+                            var data = (string)request.Data?["comparison"];
+                            comparison = !string.IsNullOrEmpty(data) ? data : State.CurrentComparison;
+                        }
                         var prediction = PredictTime(State, comparison);
                         response = SplitTimeFormatter.Format(prediction);
                         break;
@@ -383,30 +397,29 @@ namespace LiveSplit.UI.Components
                     }
                     case "setcomparison":
                     {
-                        State.CurrentComparison = args[1];
+                        State.CurrentComparison = (string)request.Data["comparison"];
                         break;
                     }
                     case "switchto":
                     {
-                        State.CurrentTimingMethod = args[1] == "gametime" ? TimingMethod.GameTime : TimingMethod.RealTime;
+                        State.CurrentTimingMethod = (string)request.Data["timingMethod"] == "gametime" ? TimingMethod.GameTime : TimingMethod.RealTime;
                         break;
                     }
                     case "setsplitname":
                     case "setcurrentsplitname":
                     {
-                        var index = State.CurrentSplitIndex;
-                        var title = args[1];
+                        int index = State.CurrentSplitIndex;
+                        string name = (string)request.Data["name"];
 
-                        if (command == "setsplitname")
+                        if (request.Command == "setsplitname")
                         {
-                            var options = args[1].Split(new [] { ' ' }, 2);
-                            index = Convert.ToInt32(options[0]);
-                            title = options[1];
+                            index = (int)request.Data["index"];
+                            name = (string)request.Data["name"];
                         }
 
                         if (index >= 0 && index < State.Run.Count)
                         {
-                            State.Run[index].Name = title;
+                            State.Run[index].Name = name;
                             State.Run.HasChanged = true;
                         }
 
@@ -414,7 +427,7 @@ namespace LiveSplit.UI.Components
                     }
                     default:
                     {
-                        throw new Exception($"Unrecognized command: \"{command}\"");
+                        throw new Exception($"Unrecognized command: \"{request.Command}\"");
                     }
                 }
             }
