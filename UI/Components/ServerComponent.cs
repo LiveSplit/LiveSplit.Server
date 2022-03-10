@@ -2,6 +2,7 @@
 using LiveSplit.Options;
 using LiveSplit.TimeFormatters;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -43,6 +44,8 @@ namespace LiveSplit.UI.Components
         private class Message
         {
             public string Command { get; set; }
+
+            public string Status { get; set; }
 
             public Dictionary<string, object> Data { get; set; }
 
@@ -180,10 +183,13 @@ namespace LiveSplit.UI.Components
 
         private void ProcessMessage(String message, Connection clientConnection)
         {
-            string response = null;
+            Message response = new Message{ Status = "success", Data = new Dictionary<string, object>() };
             try
             {
                 Message request = JsonConvert.DeserializeObject<Message>(message);
+                response.Command = request.Command;
+                response.Nonce = request.Nonce;
+
                 switch (request.Command)
                 {
                     case "startorsplit":
@@ -279,38 +285,25 @@ namespace LiveSplit.UI.Components
                             delta = State.Run.Last().SplitTime[State.CurrentTimingMethod] - State.Run.Last().Comparisons[comparison][State.CurrentTimingMethod];
 
                         // Defaults to "-" when delta is null, such as when State.CurrentPhase == TimerPhase.NotRunning
-                        response = DeltaFormatter.Format(delta);
+                        response.Data.Add("delta", DeltaFormatter.Format(delta));
                         break;
                     }
                     case "getsplitindex":
                     {
                         var splitindex = State.CurrentSplitIndex;
-                        response = splitindex.ToString();
+                        response.Data.Add("splitIndex", splitindex.ToString());
                         break;
                     }
                     case "getcurrentsplitname":
                     {
-                        if (State.CurrentSplit != null)
-                        {
-                            response = State.CurrentSplit.Name;
-                        }
-                        else
-                        {
-                            response = "-";
-                        }
+                        response.Data.Add("currentSplitName", State.CurrentSplit?.Name);
                         break;
                     }
                     case "getlastsplitname":
                     case "getprevioussplitname":
                     {
-                        if (State.CurrentSplitIndex > 0)
-                        {
-                            response = State.Run[State.CurrentSplitIndex - 1].Name;
-                        }
-                        else
-                        {
-                            response = "-";
-                        }
+                        response.Data.Add("previousSplitName",
+                            State.CurrentSplitIndex > 0 ? State.Run[State.CurrentSplitIndex - 1].Name : null);
                         break;
                     }
                     case "getlastsplittime":
@@ -319,11 +312,11 @@ namespace LiveSplit.UI.Components
                         if (State.CurrentSplitIndex > 0)
                         {
                             var time = State.Run[State.CurrentSplitIndex - 1].SplitTime[State.CurrentTimingMethod];
-                            response = SplitTimeFormatter.Format(time);
+                            response.Data.Add("previousSplitTime", SplitTimeFormatter.Format(time));
                         }
                         else
                         {
-                            response = "-";
+                            response.Data.Add("previousSplitTime", null);
                         }
                         break;
                     }
@@ -335,33 +328,29 @@ namespace LiveSplit.UI.Components
                             var data = (string)request.Data?["comparison"];
                             var comparison = !string.IsNullOrEmpty(data) ? data : State.CurrentComparison;
                             var time = State.CurrentSplit.Comparisons[comparison][State.CurrentTimingMethod];
-                            response = SplitTimeFormatter.Format(time);
+                            response.Data.Add("currentSplitTime", SplitTimeFormatter.Format(time));
                         }
                         else
                         {
-                            response = "-";
+                            response.Data.Add("currentSplitTime", null);
                         }
                         break;
                     }
                     case "getcurrentrealtime":
                     {
-                        response = SplitTimeFormatter.Format(State.CurrentTime.RealTime);
+                        response.Data.Add("currentRealTime", SplitTimeFormatter.Format(State.CurrentTime.RealTime));
                         break;
                     }
                     case "getcurrentgametime":
                     {
-                        var timingMethod = TimingMethod.GameTime;
-                        if (!State.IsGameTimeInitialized)
-                            timingMethod = TimingMethod.RealTime;
-                        response = SplitTimeFormatter.Format(State.CurrentTime[timingMethod]);
+                        var timingMethod = State.IsGameTimeInitialized ? TimingMethod.GameTime : TimingMethod.RealTime;
+                        response.Data.Add("currentGameTime", SplitTimeFormatter.Format(State.CurrentTime[timingMethod]));
                         break;
                     }
                     case "getcurrenttime":
                     {
-                        var timingMethod = State.CurrentTimingMethod;
-                        if (timingMethod == TimingMethod.GameTime && !State.IsGameTimeInitialized)
-                            timingMethod = TimingMethod.RealTime;
-                        response = SplitTimeFormatter.Format(State.CurrentTime[timingMethod]);
+                        var timingMethod = State.IsGameTimeInitialized ? State.CurrentTimingMethod : TimingMethod.RealTime;
+                        response.Data.Add("currentTime", SplitTimeFormatter.Format(State.CurrentTime[timingMethod]));
                         break;
                     }
                     case "getfinaltime":
@@ -372,27 +361,33 @@ namespace LiveSplit.UI.Components
                         var time = (State.CurrentPhase == TimerPhase.Ended)
                             ? State.CurrentTime[State.CurrentTimingMethod]
                             : State.Run.Last().Comparisons[comparison][State.CurrentTimingMethod];
-                        response = SplitTimeFormatter.Format(time);
+                        response.Data.Add("finalTime", SplitTimeFormatter.Format(time));
                         break;
                     }
                     case "getbestpossibletime":
                     case "getpredictedtime":
                     {
                         string comparison;
+                        string responseKey = "predictedTime";
                         if (request.Command == "getbestpossibletime")
+                        {
+                            responseKey = "bestPossibleTime";
                             comparison = LiveSplit.Model.Comparisons.BestSegmentsComparisonGenerator.ComparisonName;
-                        else {
+                        }
+                        else
+                        {
                             var data = (string)request.Data?["comparison"];
                             comparison = !string.IsNullOrEmpty(data) ? data : State.CurrentComparison;
                         }
+
                         var prediction = PredictTime(State, comparison);
-                        response = SplitTimeFormatter.Format(prediction);
+                        response.Data.Add(responseKey, SplitTimeFormatter.Format(prediction));
                         break;
                     }
                     case "gettimerphase":
                     case "getcurrenttimerphase":
                     {
-                        response = State.CurrentPhase.ToString();
+                        response.Data.Add("timerPhase", State.CurrentPhase.ToString());
                         break;
                     }
                     case "setcomparison":
@@ -408,14 +403,8 @@ namespace LiveSplit.UI.Components
                     case "setsplitname":
                     case "setcurrentsplitname":
                     {
-                        int index = State.CurrentSplitIndex;
+                        int index = request.Command == "setsplitname" ? (int)request.Data["index"] : State.CurrentSplitIndex;
                         string name = (string)request.Data["name"];
-
-                        if (request.Command == "setsplitname")
-                        {
-                            index = (int)request.Data["index"];
-                            name = (string)request.Data["name"];
-                        }
 
                         if (index >= 0 && index < State.Run.Count)
                         {
@@ -433,14 +422,15 @@ namespace LiveSplit.UI.Components
             }
             catch (Exception ex)
             {
-                response = "[Error]: " + ex.GetType() + ": " + ex.Message;
+                response.Status = "error";
+                response.Data.Add("error", $"{ex.GetType()}: {ex.Message}");
                 Log.Error(ex);
             }
 
-            if (!string.IsNullOrEmpty(response))
-            {
-                clientConnection.SendMessage(response);
-            }
+            clientConnection.SendMessage(
+                JsonConvert.SerializeObject(
+                    response,
+                    new JsonSerializerSettings{ ContractResolver = new CamelCasePropertyNamesContractResolver() }));
         }
 
         private void connection_Disconnected(object sender, EventArgs e)
