@@ -125,6 +125,29 @@ Commands are defined at `ProcessMessage` in "ServerComponent.cs".
 ### Game Time
 When using Game Time, it's important that you call "initgametime" once. Once "initgametime" is used, an additional comparison will appear and you can switch to it via the context menu (Compare Against > Game Time). This special comparison will show everything based on the Game Time (every component now shows Game Time based information). If you do not initialize game time, all commands that respond with a time will use Real Time for the timing method, even if you specify Game Time.
 
+## Matching responses to commands
+Message responses are not guaranteed to be sent in the same order incoming commands are received. This means that if your application is waiting for a response to its request, it could receive the response for a *different* request instead, if the two requests were made close enough to each other. In order to guarantee a response corresponds to a given request, clients should generate a [nonce](https://en.wikipedia.org/wiki/Cryptographic_nonce) and send it with their command request. LiveSplit.Server will include the nonce in the response so that your code may check that it matches before performing any additional actions. This also has the added benefit of preventing another application from sending messages over the same port that could trigger actions in your application.
+
+Example request with nonce:
+```json
+{
+    "command": "getdelta",
+    "nonce": "ac49057d-be60-44e5-a05a-882b9eb31e81",
+}
+```
+Response:
+```json
+{
+    "command": "getdelta",
+    "status": "success",
+    "nonce": "ac49057d-be60-44e5-a05a-882b9eb31e81",
+    "data": {
+        "delta": "-1:30.12"
+    }
+}
+```
+Note that while it is common for nonces to be of a standardized format, such as UUID in the example above, there are no requirements around their structure or uniqueness; any string will be accepted by LiveSplit.Server. It is up to whatever client you use to guarantee their uniqueness. The nonce field is completely optional, though strongly recommended in any case that sends commands even somewhat frequently.
+
 ## Example Clients
 
 ### Python
