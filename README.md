@@ -9,7 +9,7 @@ Consider using the latest development build of LiveSplit available at [http://li
 Alternatively:
 
 - Download the Server component from [https://github.com/LiveSplit/LiveSplit.Server/releases](https://github.com/LiveSplit/LiveSplit.Server/releases)
-- Locate your LiveSplit instillation directory
+- Locate your LiveSplit installation directory
 - Place the contents of the downloaded zip into the "LiveSplit\Components" directory
 
 ## Setup
@@ -48,11 +48,41 @@ Made something cool? Consider getting it added to this list.
 
 ## Commands
 
-Commands are case sensitive and end with a carriage return and a line feed (\r\n). You can provide parameters by using a space after the command and sending the parameters afterwards (`<command><space><parameters><\r\n>`).
+Commands are JSON strings that end with a carriage return and a line feed (\r\n).
+```json
+{ "command": "starttimer" }
+```
+Additional data can be passed to commands that accept them (such as `getdelta`) in the form of a `data` object.
+```json
+{
+    "command": "getdelta",
+    "data": {
+        "comparison": "Best Segments"
+    }
+}
+```
+Remember that the JSON object **must** be serialized to a string before it is sent to LiveSplit.Server.
 
-A command can respond with a message. The message ends with a carriage return and a line feed, just like a command.
+All commands respond with a message. The message is a JSON string and ends with a carriage return and a line feed, just like a command. The message will, at minimum, contain two properties: `"command"` and `"status"`. The command property simply reiterates what command was attempted. The `"status"` property will have a value of either `"success"` or `"error"` to indicate the success or failure of the operation, respectively.
+Example response for a request of `{ "command": "starttimer" }`:
+```json
+{
+    "command": "starttimer",
+    "status": "success"
+}
+```
+If the requested command expects some kind of information, it will be included in a `data` object with a property name similar to the command name.
+```json
+{
+    "command": "getbestpossibletime",
+    "status": "success",
+    "data": {
+        "bestPossibleTime": "45:02.85"
+    }
+}
+```
 
-Here's the list of commands:
+The following commands perform actions and do not return any additional data:
 
 - starttimer
 - startorsplit
@@ -63,34 +93,60 @@ Here's the list of commands:
 - resume
 - reset
 - initgametime
-- setgametime TIME
-- setloadingtimes TIME
 - pausegametime
 - unpausegametime
-- setcomparison COMPARISON
+- setgametime (expects `time` property)
+- setloadingtimes (expects `time` property)
+- setcomparison (expects `comparison` property)
+- setsplitname (expects `index` and `name` properties)
+- setcurrentsplitname (expects `name` property)
+- switchto (expects `timingMethod` property with value of either "gametime" or "realtime")
+- alwayspausegametime
 
 The following commands respond with a time:
 
-- getdelta
-- getdelta COMPARISON
-- getlastsplittime
-- getcomparisonsplittime
+- getdelta (optional `comparison` property) - time is prefixed with "+" or "-"
+- getprevioussplittime / getlastsplittime
+- getcurrentsplittime / getcomparisonsplittime (optional `comparison` property)
 - getcurrenttime
-- getfinaltime
-- getfinaltime COMPARISON
-- getpredictedtime COMPARISON
+- getfinaltime / getfinalsplittime (optional `comparison` property)
+- getpredictedtime (optional `comparison` property)
 - getbestpossibletime
 
-Other commands:
+The following commands respond with other types of information:
 
 - getsplitindex
 - getcurrentsplitname
-- getprevioussplitname
-- getcurrenttimerphase
+- getprevioussplitname / getlastsplitname
+- gettimerphase / getcurrenttimerphase
 
 Commands are defined at `ProcessMessage` in "ServerComponent.cs".
 
-When using Game Time, it's important that you call "initgametime" once. Once "initgametime" is used, an additional comparison will appear and you can switch to it via the context menu (Compare Against > Game Time). This special comparison will show everything based on the Game Time (every component now shows Game Time based information).
+### Game Time
+When using Game Time, it's important that you call "initgametime" once. Once "initgametime" is used, an additional comparison will appear and you can switch to it via the context menu (Compare Against > Game Time). This special comparison will show everything based on the Game Time (every component now shows Game Time based information). If you do not initialize game time, all commands that respond with a time will use Real Time for the timing method, even if you specify Game Time.
+
+## Matching responses to commands
+Message responses are not guaranteed to be sent in the same order incoming commands are received. This means that if your application is waiting for a response to its request, it could receive the response for a *different* request instead, if the two requests were made close enough to each other. In order to guarantee a response corresponds to a given request, clients should generate a [nonce](https://en.wikipedia.org/wiki/Cryptographic_nonce) and send it with their command request. LiveSplit.Server will include the nonce in the response so that your code may check that it matches before performing any additional actions. This also has the added benefit of preventing another application from sending messages over the same port that could trigger actions in your application.
+
+Example request with nonce:
+```json
+{
+    "command": "getdelta",
+    "nonce": "ac49057d-be60-44e5-a05a-882b9eb31e81",
+}
+```
+Response:
+```json
+{
+    "command": "getdelta",
+    "status": "success",
+    "nonce": "ac49057d-be60-44e5-a05a-882b9eb31e81",
+    "data": {
+        "delta": "-1:30.12"
+    }
+}
+```
+Note that while it is common for nonces to be of a standardized format, such as UUID in the example above, there are no requirements around their structure or uniqueness; any string will be accepted by LiveSplit.Server. It is up to whatever client you use to guarantee their uniqueness. The nonce field is completely optional, though strongly recommended in any case that sends commands even somewhat frequently.
 
 ## Example Clients
 
@@ -101,7 +157,7 @@ import socket
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(("localhost", 16834))
-s.send(b"starttimer\r\n")
+s.send(b"{\"command\":\"starttimer\"}\r\n")
 ```
 
 ### Java 7+
@@ -115,7 +171,7 @@ public class MainTest {
     public static void main(String[] args) throws IOException {
         Socket socket = new Socket("localhost", 16834);
         PrintWriter writer = new PrintWriter(socket.getOutputStream());
-        writer.write("starttimer\r\n");
+        writer.write("{\"command\":\"starttimer\"}\r\n");
         writer.flush();
         socket.close();
     }
