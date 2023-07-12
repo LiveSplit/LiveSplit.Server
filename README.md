@@ -54,7 +54,6 @@ A command can respond with a message. The message ends with a carriage return an
 
 Here's the list of commands:
 
-- starttimer
 - startorsplit
 - split
 - unsplit
@@ -62,12 +61,17 @@ Here's the list of commands:
 - pause
 - resume
 - reset
-- initgametime
+- starttimer
 - setgametime TIME
 - setloadingtimes TIME
 - pausegametime
 - unpausegametime
+- alwayspausegametime
 - setcomparison COMPARISON
+- switchto realtime
+- switchto gametime
+- setsplitname INDEX NAME
+- setcurrentsplitname NAME
 
 The following commands respond with a time:
 
@@ -75,6 +79,8 @@ The following commands respond with a time:
 - getdelta COMPARISON
 - getlastsplittime
 - getcomparisonsplittime
+- getcurrentrealtime
+- getcurrentgametime
 - getcurrenttime
 - getfinaltime
 - getfinaltime COMPARISON
@@ -89,8 +95,6 @@ Other commands:
 - getcurrenttimerphase
 
 Commands are defined at `ProcessMessage` in "ServerComponent.cs".
-
-When using Game Time, it's important that you call "initgametime" once. Once "initgametime" is used, an additional comparison will appear and you can switch to it via the context menu (Compare Against > Game Time). This special comparison will show everything based on the Game Time (every component now shows Game Time based information).
 
 ## Example Clients
 
