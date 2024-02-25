@@ -9,7 +9,7 @@ Consider using the latest development build of LiveSplit available at [http://li
 Alternatively:
 
 - Download the Server component from [https://github.com/LiveSplit/LiveSplit.Server/releases](https://github.com/LiveSplit/LiveSplit.Server/releases)
-- Locate your LiveSplit instillation directory
+- Locate your LiveSplit installation directory
 - Place the contents of the downloaded zip into the "LiveSplit\Components" directory
 
 ## Setup
