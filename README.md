@@ -1,3 +1,4 @@
+# ⚠️ This component has been deprecated; all of its functionality has been incorporated into the internal LiveSplit server.
 # LiveSplit Server
 
 LiveSplit Server is a LiveSplit component that allows for other programs and other computers to control LiveSplit.
